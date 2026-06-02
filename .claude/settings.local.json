@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -Path \"c:\\\\Dev\\\\VSC\\\\cotizaciones-docling\\\\requirements.txt\" -ItemType File -Force)",
+      "Bash(Out-Null)",
+      "Bash(Set-Content -Path \"c:\\\\Dev\\\\VSC\\\\cotizaciones-docling\\\\requirements.txt\" -Value \"docling\" -Encoding utf8)",
+      "PowerShell(New-Item -Path \"c:\\\\Dev\\\\VSC\\\\cotizaciones-docling\\\\requirements.txt\" -ItemType File -Force)",
+      "PowerShell(New-Item -Path \"c:\\\\Dev\\\\VSC\\\\cotizaciones-docling\\\\Dockerfile\" -ItemType File -Force)",
+      "PowerShell(if \\($?\\) { \"Removed\" } else { \"Failed\" })"
+    ]
+  }
+}
