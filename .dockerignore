@@ -1,0 +1,7 @@
+.git
+input/
+output/
+*.md
+.claude/
+__pycache__/
+*.pyc
