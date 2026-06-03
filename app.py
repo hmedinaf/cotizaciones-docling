@@ -2,6 +2,7 @@ import os
 import sys
 from pathlib import Path
 
+import pandas as pd
 import pytesseract
 from pdf2image import convert_from_path
 from PIL import Image
@@ -12,10 +13,31 @@ DPI = int(os.getenv("DPI", "300"))
 OCR_LANG = os.getenv("OCR_LANG", "spa+eng")
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff", ".bmp", ".webp"}
+TABULAR_EXTENSIONS = {".xlsx", ".xls", ".csv"}
+
+
+def _tabular_to_markdown(file_path: Path) -> str:
+    suffix = file_path.suffix.lower()
+    if suffix == ".csv":
+        df = pd.read_csv(file_path, encoding_errors="replace")
+        return df.to_markdown(index=False)
+    else:
+        xls = pd.ExcelFile(file_path)
+        sections = []
+        for sheet_name in xls.sheet_names:
+            df = xls.parse(sheet_name)
+            if df.empty:
+                continue
+            table = df.to_markdown(index=False)
+            sections.append(f"## {sheet_name}\n\n{table}")
+        return "\n\n---\n\n".join(sections)
 
 
 def file_to_markdown(file_path: Path) -> str:
-    if file_path.suffix.lower() == ".pdf":
+    suffix = file_path.suffix.lower()
+    if suffix in TABULAR_EXTENSIONS:
+        return _tabular_to_markdown(file_path)
+    elif suffix == ".pdf":
         images = convert_from_path(str(file_path), dpi=DPI)
         pages = []
         for i, image in enumerate(images, 1):
@@ -31,7 +53,7 @@ def file_to_markdown(file_path: Path) -> str:
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    all_extensions = {".pdf"} | IMAGE_EXTENSIONS
+    all_extensions = {".pdf"} | IMAGE_EXTENSIONS | TABULAR_EXTENSIONS
     input_files = sorted(
         f for f in INPUT_DIR.iterdir()
         if f.is_file() and f.suffix.lower() in all_extensions

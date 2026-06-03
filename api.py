@@ -5,7 +5,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app import IMAGE_EXTENSIONS, file_to_markdown
+from app import IMAGE_EXTENSIONS, TABULAR_EXTENSIONS, file_to_markdown
 
 app = FastAPI(title="OCR Service")
 
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SUPPORTED = {".pdf"} | IMAGE_EXTENSIONS
+SUPPORTED = {".pdf"} | IMAGE_EXTENSIONS | TABULAR_EXTENSIONS
 
 
 @app.get("/health")
@@ -41,6 +41,11 @@ async def ocr(file: UploadFile = File(...)):
     finally:
         tmp_path.unlink(missing_ok=True)
 
-    pages = text.count("<!-- page") if suffix == ".pdf" else 1
+    if suffix == ".pdf":
+        pages = text.count("<!-- page")
+    elif suffix in TABULAR_EXTENSIONS:
+        pages = text.count("\n## ") + 1  # one "page" per sheet/file
+    else:
+        pages = 1
 
     return JSONResponse({"filename": file.filename, "text": text, "pages": pages})
