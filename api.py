@@ -2,11 +2,19 @@ import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app import IMAGE_EXTENSIONS, file_to_markdown
 
 app = FastAPI(title="OCR Service")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 SUPPORTED = {".pdf"} | IMAGE_EXTENSIONS
 
